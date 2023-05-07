@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random, time
 import param, utils, models
+from scipy.stats import spearmanr, pearsonr
 
 
 def estimate_epr(model_func, data_inst):
@@ -204,3 +205,57 @@ def get_metrics(data_id, estimate_id, stress, n_trajectories, n_timepoints, stat
     mean_sEPR = rf.mean()
 
     return mean_NCT, mean_aEPR, mean_sEPR
+
+def get_metrics_ratio(data_id, estimate_id, stress, n_trajectories, n_timepoints, stationary=False):
+    dat_file = f"Data/datanct_{stress}.txt"
+    res_file = f"Result/epr{data_id}_{estimate_id}.txt"
+
+    df = np.loadtxt(dat_file)
+    rf = np.loadtxt(res_file)
+
+    data = df.reshape((n_trajectories, n_timepoints, -1)).mean(0)
+
+    M = data[:, 1]
+    MA = data[:, 2]
+    MNA = data[:, 3]
+    MN = data[:, 4]
+
+    if not stationary:
+        rf = rf.reshape(-1, 2)[:, 1]
+
+    mean_NCT = utils.NCT(M, MA, MNA, MN).mean()
+    mean_aEPR = utils.aEPR(M, MA, MNA, MN, stress).mean()
+    mean_sEPR = rf.mean()
+
+    return mean_NCT, mean_aEPR, mean_sEPR
+
+def compute_estimate_correlation(all_metrics):
+    ncr = all_metrics[:, 0]
+    e_epr = all_metrics[:, 2]
+
+    spearman = spearmanr(ncr, e_epr)[0]
+    pearson = pearsonr(ncr, e_epr)[0]
+
+    return spearman, pearson
+
+def plot_correlation(all_metrics):
+    ncr = all_metrics[:, 0]
+    a_epr = all_metrics[:, 1]
+    e_epr = all_metrics[:, 2]
+
+    plt.figure(figsize=(10, 10))
+
+    plt.subplot(221)
+    plt.plot(ncr, a_epr, "ko-")
+    plt.title(f"S: {spearmanr(ncr, a_epr)[0]:.3f}  |  P: {pearsonr(ncr, a_epr)[0]:.3f}")
+    plt.xlabel("NC Ratio")
+    plt.ylabel("Analytical EPR")
+
+    plt.subplot(222)
+    plt.plot(ncr, e_epr, "go-")
+    plt.title(f"S: {spearmanr(ncr, e_epr)[0]:.3f}  |  P: {pearsonr(ncr, e_epr)[0]:.3f}")
+    plt.xlabel("NC Ratio")
+    plt.ylabel("Estimated EPR")
+
+    plt.tight_layout()
+    plt.show()

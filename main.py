@@ -161,8 +161,7 @@ def estimate_entropy(data_id, estimate_id, rand_seed=0):
                     ax.set_title('t=' + '{:.3f}'.format(i*param.slice_interval*param.dt), fontsize=18)
                 plt.tick_params(labelsize=18)
                 fig.savefig('Result/thermo_force' + str(data_id) + '_' + str(estimate_id) + '_' + str(i) + fig_format)
-                if n_time_instances > 1: 
-                    plt.close()  # Unless it is closed, every plots will appear in Jupyter notebook.
+                plt.close()  # Unless it is closed, every plots will appear in Jupyter notebook.
                 
         # Make a gif movie
         images = []
