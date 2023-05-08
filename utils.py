@@ -166,5 +166,41 @@ def plot_epr(filename, true_epr_func=None):
     plt.tick_params(labelsize=18)
     plt.savefig('Result/epr.svg')
 
-    
 
+def NCT(M, MA, MNA, MN):
+    return (MNA + MN) / (M + MA)
+
+def aEPR(M, MA, MNA, MN, S):
+    k0, k1, k2, k3, k4, k5, k6, k7 = [100.0, 50.0, 6.6, 1.0, 150.0, 50.0, 5.0, 5.0]
+    
+    pS = lambda A, B, kA, kB: ((kA * A) - (kB * B)) * np.log(kA / kB)
+
+    return pS(M, MA, S * k0, k1) + pS(MA, MNA, k2, k3) + pS(MNA, MN, k4, k5) + pS(MN, M, k6, k7)
+
+def get_metrics(data_id, estimate_id, stress, n_trajectories, n_timepoints, stationary=False):
+    dat_file = f"Data/data{data_id}.txt"
+    res_file = f"Result/epr{data_id}_{estimate_id}.txt"
+
+    df = np.loadtxt(dat_file)
+    rf = np.loadtxt(res_file)
+
+    data = df.reshape((n_trajectories, n_timepoints, -1)).mean(0)
+
+    if stationary:
+        M = data[:, 0]
+        MA = data[:, 1]
+        MNA = data[:, 2]
+        MN = data[:, 3]
+
+    else:
+        M = data[:, 1]
+        MA = data[:, 2]
+        MNA = data[:, 3]
+        MN = data[:, 4]
+        rf = rf.reshape(-1, 2)[:, 1]
+
+    mean_NCT = utils.NCT(M, MA, MNA, MN).mean()
+    mean_aEPR = utils.aEPR(M, MA, MNA, MN, stress).mean()
+    mean_sEPR = rf.mean()
+
+    return mean_NCT, mean_aEPR, mean_sEPR
