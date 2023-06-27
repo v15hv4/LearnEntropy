@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import random, time
-import param, utils, models
+from LearnEntropy import param, utils, models
 from scipy.stats import spearmanr, pearsonr
 
 

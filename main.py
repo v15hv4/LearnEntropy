@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import sys, time, copy, os
-import param, utils, models
+from LearnEntropy import param, utils, models
 
 
 def estimate_entropy(data_id, estimate_id, rand_seed=0):

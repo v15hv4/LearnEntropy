@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import param
+from LearnEntropy import param
 
 
 ### Time-dependent models ###
